@@ -1,0 +1,17 @@
+assets/
+libraries/
+versions/
+natives/
+
+.gradle/
+build/
+out/
+run/
+
+.idea/
+*.iml
+
+logs/
+crash-reports/
+
+*.log
