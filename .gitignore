@@ -15,3 +15,8 @@ logs/
 crash-reports/
 
 *.log
+
+saves/
+options.txt
+optionsof.txt
+usercache.json
