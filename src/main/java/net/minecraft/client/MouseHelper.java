@@ -1,5 +1,8 @@
 package net.minecraft.client;
 
+import org.lwjgl.glfw.GLFW;
+import ru.nightlume.Nightlume;
+import ru.nightlume.module.impl.misc.AltLookModule;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -12,6 +15,7 @@ import net.minecraft.client.util.MouseSmoother;
 import net.minecraft.client.util.NativeUtil;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFWDropCallback;
+import net.minecraft.client.settings.PointOfView;
 
 public class MouseHelper
 {
@@ -349,6 +353,42 @@ public class MouseHelper
 
             if (this.minecraft.player != null)
             {
+                AltLookModule altLook = Nightlume.getInstance() == null ? null :
+                        (AltLookModule) Nightlume.getInstance().getModuleManager().getModule(AltLookModule.class);
+
+                if (altLook != null && altLook.isEnabled()) {
+                    boolean holding = GLFW.glfwGetKey(
+                            this.minecraft.getMainWindow().getHandle(),
+                            altLook.holdKey.getKey()
+                    ) == GLFW.GLFW_PRESS;
+
+                    if (holding) {
+                        if (!altLook.wasHolding()) {
+                            altLook.reset(this.minecraft.player.rotationYaw, this.minecraft.player.rotationPitch);
+                            altLook.setWasHolding(true);
+
+                            if (altLook.thirdPerson.getValue()) {
+                                altLook.setPreviousPointOfView(this.minecraft.gameSettings.getPointOfView());
+                                this.minecraft.gameSettings.setPointOfView(PointOfView.THIRD_PERSON_BACK);
+                            }
+                        }
+
+                        altLook.setLooking(true);
+                        altLook.rotate(d2, d3 * (double) i);
+                        return;
+                    }
+
+                    if (altLook.wasHolding()) {
+                        if (altLook.thirdPerson.getValue() && altLook.getPreviousPointOfView() != null) {
+                            this.minecraft.gameSettings.setPointOfView(altLook.getPreviousPointOfView());
+                            altLook.setPreviousPointOfView(null);
+                        }
+
+                        altLook.setLooking(false);
+                        altLook.setWasHolding(false);
+                    }
+                }
+
                 this.minecraft.player.rotateTowards(d2, d3 * (double)i);
             }
         }

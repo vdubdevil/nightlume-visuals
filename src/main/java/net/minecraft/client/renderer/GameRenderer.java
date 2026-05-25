@@ -1,5 +1,8 @@
 package net.minecraft.client.renderer;
 
+import ru.nightlume.module.impl.misc.AltLookModule;
+import ru.nightlume.Nightlume;
+import ru.nightlume.module.impl.misc.AspectRatioModule;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GLX;
@@ -610,7 +613,26 @@ public class GameRenderer implements IResourceManagerReloadListener, AutoCloseab
             matrixstack.scale(this.cameraZoom, this.cameraZoom, 1.0F);
         }
 
-        matrixstack.getLast().getMatrix().mul(Matrix4f.perspective(this.getFOVModifier(activeRenderInfoIn, partialTicks, useFovSetting), (float)this.mc.getMainWindow().getFramebufferWidth() / (float)this.mc.getMainWindow().getFramebufferHeight(), 0.05F, this.clipDistance));
+        float aspect = (float) this.mc.getMainWindow().getFramebufferWidth()
+                / (float) this.mc.getMainWindow().getFramebufferHeight();
+
+        if (Nightlume.getInstance() != null) {
+            AspectRatioModule aspectModule = (AspectRatioModule) Nightlume.getInstance()
+                    .getModuleManager()
+                    .getModule(AspectRatioModule.class);
+
+            if (aspectModule != null && aspectModule.isEnabled() && !aspectModule.isDefault()) {
+                aspectModule.updateVisibility();
+                aspect = aspectModule.getRatio();
+            }
+        }
+
+        matrixstack.getLast().getMatrix().mul(Matrix4f.perspective(
+                this.getFOVModifier(activeRenderInfoIn, partialTicks, useFovSetting),
+                aspect,
+                0.05F,
+                this.clipDistance
+        ));
         return matrixstack.getLast().getMatrix();
     }
 
@@ -963,7 +985,15 @@ public class GameRenderer implements IResourceManagerReloadListener, AutoCloseab
         Matrix4f matrix4f = matrixstack.getLast().getMatrix();
         this.resetProjectionMatrix(matrix4f);
         activerenderinfo.update(this.mc.world, (Entity)(this.mc.getRenderViewEntity() == null ? this.mc.player : this.mc.getRenderViewEntity()), !this.mc.gameSettings.getPointOfView().func_243192_a(), this.mc.gameSettings.getPointOfView().func_243193_b(), partialTicks);
+        AltLookModule altLook = Nightlume.getInstance() == null ? null :
+                (AltLookModule) Nightlume.getInstance().getModuleManager().getModule(AltLookModule.class);
 
+        if (altLook != null && altLook.isLooking()) {
+            activerenderinfo.setAnglesInternal(
+                    altLook.getCameraYaw(),
+                    altLook.getCameraPitch()
+            );
+        }
         if (Reflector.ForgeHooksClient_onCameraSetup.exists())
         {
             Object object = Reflector.ForgeHooksClient_onCameraSetup.call(this, activerenderinfo, partialTicks);

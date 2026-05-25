@@ -186,7 +186,7 @@ public class ClickGuiScreen extends Screen {
         RenderUtil.drawRect(0, 0, width, height, 0x55000000);
         drawPanel(stack, winX, winY, winW, winH);
 
-        font.drawString(stack, "THEME CONFIGURATION", winX + 12, winY + 10, getSafeTextColor(Nightlume.getInstance().getThemeManager().getBackgroundColor()));
+        font.drawString(stack, "THEME CONFIGURATION", winX + 12, winY + 10, getThemeTextColor());
 
         int y = winY + 28;
         for (Setting setting : tm.getSettings()) {
@@ -309,7 +309,7 @@ public class ClickGuiScreen extends Screen {
         drawPanel(stack, winX, winY, winWidth, winHeight);
 
         int mainBg = Nightlume.getInstance().getThemeManager().getBackgroundColor();
-        font.drawString(stack, "NIGHTLUME ENVIRONMENT", winX + 20, winY + 15, getSafeTextColor(mainBg));
+        font.drawString(stack, "NIGHTLUME ENVIRONMENT", winX + 20, winY + 15, getThemeTextColor());
 
         int catSpacing = 24;
         int totalCatWidth = (Category.values().length - 1) * catSpacing;
@@ -327,7 +327,7 @@ public class ClickGuiScreen extends Screen {
 
         String tabName = currentCategory.getDisplayName().toUpperCase();
         int tabWidth = font.getStringWidth(tabName);
-        font.drawString(stack, tabName, winX + (winWidth / 2) - (tabWidth / 2), winY + 45, getSafeTextColor(mainBg));
+        font.drawString(stack, tabName, winX + (winWidth / 2) - (tabWidth / 2), winY + 45, getThemeTextColor());
 
         int colWidth = 160;
         int colSpacing = 20;
@@ -438,7 +438,7 @@ public class ClickGuiScreen extends Screen {
 
             drawPanel(stack, x, y, width, panelHeight);
             int mainBg = Nightlume.getInstance().getThemeManager().getBackgroundColor();
-            font.drawString(stack, panel.getCategory().getDisplayName(), x + 6, y + 8, getSafeTextColor(mainBg));
+            font.drawString(stack, panel.getCategory().getDisplayName(), x + 6, y + 8, getThemeTextColor());
 
             int moduleY = y + 26;
             for (ModuleComponent component : panel.getModules()) {
@@ -478,7 +478,7 @@ public class ClickGuiScreen extends Screen {
         }
 
         drawPanel(stack, x, y, width, height);
-        font.drawString(stack, component.getModule().getName(), x + 12, y + 8, getSafeTextColor(Nightlume.getInstance().getThemeManager().getBackgroundColor()));
+        font.drawString(stack, component.getModule().getName(), x + 12, y + 8, getThemeTextColor());
 
         int settingY = y + 22;
 
@@ -542,45 +542,96 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
+    private int getThemeTextColor() {
+        return Nightlume.getInstance().getThemeManager().getTextColor();
+    }
+
+    private int getBorderColor() {
+        ThemeModule tm = (ThemeModule) Nightlume.getInstance().getModuleManager().getModule(ThemeModule.class);
+        int outline = Nightlume.getInstance().getThemeManager().getOutlineColor();
+
+        float alpha = 1.0f;
+
+        if (tm != null) {
+            alpha = (float) tm.borderOpacity.getValue();
+        }
+
+        int borderAlpha = (int) (((outline >> 24) & 0xFF) * alpha);
+        return (outline & 0x00FFFFFF) | (borderAlpha << 24);
+    }
+
+    private float getBorderThickness() {
+        ThemeModule tm = (ThemeModule) Nightlume.getInstance().getModuleManager().getModule(ThemeModule.class);
+        return tm != null ? (float) tm.borderThickness.getValue() : 1.0f;
+    }
+
     private void drawPanel(MatrixStack stack, int x, int y, int width, int height) {
         float radius = Nightlume.getInstance().getThemeManager().getCornerRadius();
+        float border = getBorderThickness();
+
         int bgColor = applyOpacity(Nightlume.getInstance().getThemeManager().getBackgroundColor());
-        int outColor = applyOpacity(Nightlume.getInstance().getThemeManager().getOutlineColor());
+        int outColor = getBorderColor();
 
         if (style == Style.MINIMALISM) {
             RenderUtil.drawRect(x, y, width, height, bgColor);
-            RenderUtil.drawRect(x, y, width, 20, outColor);
+
+            if (border > 0.0f) {
+                RenderUtil.drawRect(x, y, width, (int) border, outColor);
+                RenderUtil.drawRect(x, y + height - (int) border, width, (int) border, outColor);
+                RenderUtil.drawRect(x, y, (int) border, height, outColor);
+                RenderUtil.drawRect(x + width - (int) border, y, (int) border, height, outColor);
+            }
+
             return;
         }
 
         if (style == Style.GLASSMORPHISM) {
-            ThemeModule tm = (ThemeModule) Nightlume.getInstance().getModuleManager().getModule(ThemeModule.class);
-            float borderOpacity = tm != null ? (float) tm.borderOpacity.getValue() : 0.3f;
             int tint = Nightlume.getInstance().getThemeManager().getBlurTint();
 
-            RoundedUtil.drawRound(x, y, width, height, radius, tint);
+            if (border > 0.0f) {
+                RoundedUtil.drawRound(x, y, width, height, radius, outColor);
+                RoundedUtil.drawRound(x + border, y + border, width - border * 2.0f, height - border * 2.0f, Math.max(0.0f, radius - border), tint);
+            } else {
+                RoundedUtil.drawRound(x, y, width, height, radius, tint);
+            }
 
-            int borderAlpha = (int)(borderOpacity * 255);
-            int syncedGlowColor = (outColor & 0x00FFFFFF) | (borderAlpha << 24);
-
-            RenderUtil.drawRect(x, y, width, 1, syncedGlowColor);
-            RenderUtil.drawRect(x, y + height - 1, width, 1, syncedGlowColor);
-            RenderUtil.drawRect(x, y, 1, height, syncedGlowColor);
-            RenderUtil.drawRect(x + width - 1, y, 1, height, syncedGlowColor);
             return;
         }
 
-        RoundedUtil.drawRound(x, y, width, height, radius, bgColor);
-        RoundedUtil.drawRound(x, y, width, 20, radius, outColor);
+        if (border > 0.0f) {
+            RoundedUtil.drawRound(x, y, width, height, radius, outColor);
+            RoundedUtil.drawRound(x + border, y + border, width - border * 2.0f, height - border * 2.0f, Math.max(0.0f, radius - border), bgColor);
+        } else {
+            RoundedUtil.drawRound(x, y, width, height, radius, bgColor);
+        }
     }
 
     private void drawModule(MatrixStack stack, int x, int y, int width, int height, int color) {
         float radius = Nightlume.getInstance().getThemeManager().getCornerRadius();
+        float border = getBorderThickness();
+        int borderColor = getBorderColor();
+
         if (style == Style.MINIMALISM) {
             RenderUtil.drawRect(x, y, width, height, color);
+
+            if (border > 0.0f) {
+                RenderUtil.drawRect(x, y, width, (int) border, borderColor);
+                RenderUtil.drawRect(x, y + height - (int) border, width, (int) border, borderColor);
+                RenderUtil.drawRect(x, y, (int) border, height, borderColor);
+                RenderUtil.drawRect(x + width - (int) border, y, (int) border, height, borderColor);
+            }
+
             return;
         }
-        RoundedUtil.drawRound(x, y, width, height, style == Style.GLASSMORPHISM ? radius + 2 : radius, color);
+
+        float finalRadius = style == Style.GLASSMORPHISM ? radius + 2.0f : radius;
+
+        if (border > 0.0f) {
+            RoundedUtil.drawRound(x, y, width, height, finalRadius, borderColor);
+            RoundedUtil.drawRound(x + border, y + border, width - border * 2.0f, height - border * 2.0f, Math.max(0.0f, finalRadius - border), color);
+        } else {
+            RoundedUtil.drawRound(x, y, width, height, finalRadius, color);
+        }
     }
 
     @Override

@@ -7,6 +7,7 @@ import ru.nightlume.module.Module;
 import ru.nightlume.module.impl.combat.HitboxModule;
 import ru.nightlume.module.impl.combat.PredictionsModule;
 import ru.nightlume.module.impl.combat.ServerHelperModule;
+import ru.nightlume.module.impl.misc.AltLookModule;
 import ru.nightlume.module.impl.misc.AspectRatioModule;
 import ru.nightlume.module.impl.misc.ItemPhysicsModule;
 import ru.nightlume.module.impl.player.AutoAcceptModule;
@@ -46,9 +47,11 @@ public class ModuleManager {
                 new ClickActionModule(),
                 new ItemPhysicsModule(),
                 new AspectRatioModule(),
+                new AltLookModule(),
                 new HudEditorModule(),
                 new ClickGuiModule(),
                 new ThemeModule()
+
         );
     }
 

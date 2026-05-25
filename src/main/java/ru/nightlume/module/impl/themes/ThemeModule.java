@@ -23,10 +23,11 @@ public class ThemeModule extends Module {
     public final NumberSetting blurStrength = new NumberSetting("Blur Strength", 4.0, 1.0, 5.0, 0.25);
     public final NumberSetting borderOpacity = new NumberSetting("Border Opacity", 0.3, 0.0, 1.0, 0.05);
     public final NumberSetting glowStrength = new NumberSetting("Glow Strength", 2.0, 0.0, 10.0, 0.5);
+    public final NumberSetting borderThickness = new NumberSetting("Border Thickness", 1.0, 0.0, 4.0, 0.25);
 
     public ThemeModule() {
         super("Global Theme", Category.HIDDEN);
-        addSettings(bgColor, outlineColor, textColor, accentColor, cornerRadius, globalOpacity, glassTint, blurStrength, borderOpacity, glowStrength);
+        addSettings(bgColor, outlineColor, textColor, accentColor, cornerRadius, globalOpacity, glassTint, blurStrength, borderOpacity, borderThickness, glowStrength);
     }
 
     public void updateVisibility() {
