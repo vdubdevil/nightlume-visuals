@@ -1,6 +1,6 @@
 <div align="center">
 
-# Nightlume Environment
+# Nightlume
 
 **A visual environment & HUD enhancement client for Minecraft**
 
@@ -14,7 +14,7 @@ Status: `ROLLING RELEASE` · Version: `v1.1.0`
 
 ## Overview
 
-**Nightlume Environment** is a client-side Minecraft modification focused on visual environment enhancement and HUD augmentation. It layers a custom rendering and module system on top of MCP 1.16.5 + OptiFine, giving players a set of purely cosmetic, semi-Lunar-style HUD modules — ambience control, particle effects, custom fog, hit indicators, and more — without touching gameplay-affecting logic.
+**Nightlume** is a client-side Minecraft modification focused on visual environment enhancement and HUD augmentation. It layers a custom rendering and module system on top of MCP 1.16.5 + OptiFine, giving players a set of purely cosmetic, semi-Lunar-style HUD modules — ambience control, particle effects, custom fog, hit indicators, and more — without touching gameplay-affecting logic.
 
 This is an independent research/hobby project. No packet manipulation, no combat automation, no gameplay advantages — visual and environmental only.
 
